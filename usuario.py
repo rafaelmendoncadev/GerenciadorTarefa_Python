@@ -1,45 +1,109 @@
-﻿# -*- coding: utf-8 -*-
-import pyodbc
-
-# Altere conforme seu ambiente
-CONN_STR = (
-    "DRIVER={SQL Server};"
-    "SERVER=localhost\\SQLEXPRESS;"
-    "DATABASE=GerenciadorTarefas;"
-    "Trusted_Connection=yes;"
-)
+﻿import sqlite3
 
 def conectar():
-    return pyodbc.connect(CONN_STR)
+    return sqlite3.connect("banco_tarefas.db")
+
+def criar_tabela():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL UNIQUE,
+            email TEXT,
+            senha TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def cadastrar_usuario(nome, email, senha):import sqlite3
+
+def conectar():
+    return sqlite3.connect("banco_tarefas.db")
+
+def criar_tabela():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL UNIQUE,
+            email TEXT,
+            senha TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
 
 def cadastrar_usuario(nome, email, senha):
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO Usuarios (Nome, Email, Senha) VALUES (?, ?, ?)",
-        (nome, email, senha)
-    )
-    conn.commit()
-    cursor.close()
+    try:
+        cursor.execute(
+            "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
+            (nome, email, senha)
+        )
+        conn.commit()
+        sucesso = True
+    except sqlite3.IntegrityError:
+        sucesso = False
     conn.close()
+    return sucesso
 
 def autenticar_usuario(nome, senha):
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT UsuarioId, Nome FROM Usuarios WHERE Nome = ? AND Senha = ?",
+        "SELECT id, nome FROM usuarios WHERE nome = ? AND senha = ?",
         (nome, senha)
     )
     usuario = cursor.fetchone()
-    cursor.close()
     conn.close()
-    return usuario  # None se não encontrado, ou (UsuarioId, Nome)
+    return usuario  # None se não encontrado, ou (id, nome)
 
 def listar_usuarios():
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute("SELECT UsuarioId, Nome, Email FROM Usuarios")
+    cursor.execute("SELECT id, nome, email FROM usuarios")
     usuarios = cursor.fetchall()
-    cursor.close()
     conn.close()
     return usuarios
+
+# Garante que a tabela exista ao importar o módulo
+criar_tabela()
+    conn = conectar()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
+            (nome, email, senha)
+        )
+        conn.commit()
+        sucesso = True
+    except sqlite3.IntegrityError:
+        sucesso = False
+    conn.close()
+    return sucesso
+
+def autenticar_usuario(nome, senha):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, nome FROM usuarios WHERE nome = ? AND senha = ?",
+        (nome, senha)
+    )
+    usuario = cursor.fetchone()
+    conn.close()
+    return usuario  # None se não encontrado, ou (id, nome)
+
+def listar_usuarios():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nome, email FROM usuarios")
+    usuarios = cursor.fetchall()
+    conn.close()
+    return usuarios
+
+# Garante que a tabela exista ao importar o módulo
+criar_tabela()
